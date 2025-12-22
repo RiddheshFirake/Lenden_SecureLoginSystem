@@ -1,216 +1,271 @@
-# Secure User Profile System with MongoDB
+# 🔐 Secure User Profile & Access Control System
 
-A full-stack application with secure user authentication and encrypted profile management using MongoDB Atlas.
+**Identity Management Microservice (Option A)**
 
-## 🚀 Features
+A full-stack Identity Management Microservice implementing **Stateless Authentication** using JWT tokens and **Field-level Encryption** (AES-256) for sensitive data. This system provides secure user registration, authentication, and profile management with enterprise-grade security features.
 
-- **User Authentication**: Secure registration and login with JWT tokens
-- **Data Encryption**: Sensitive data (Aadhaar numbers) encrypted using AES-256-GCM
-- **MongoDB Atlas**: Cloud-hosted MongoDB database
-- **React Frontend**: Modern UI with Material-UI components
-- **Express Backend**: RESTful API with comprehensive security middleware
-- **TypeScript**: Full type safety across the stack
+## 🎯 Project Overview
 
-## 📋 Prerequisites
+This project implements a comprehensive **Identity Management Microservice** with the following core features:
 
+- **🔑 Stateless Authentication**: JWT-based authentication system eliminating server-side session storage
+- **🛡️ Field-level Encryption**: AES-256-GCM encryption specifically for Aadhaar/ID numbers stored in the database
+- **📊 Secure Dashboard**: Frontend interface that fetches and securely decrypts sensitive user data
+- **🔒 Enterprise Security**: Comprehensive security middleware including rate limiting, input validation, and CORS protection
+- **📱 Modern UI**: Responsive React.js frontend with Material-UI components
+- **⚡ Scalable Backend**: Node.js with Express.js providing RESTful API endpoints
+
+## 🎬 Demo & Repository
+
+- **📹 Live Demo Video**: [INSERT_DEMO_VIDEO_LINK_HERE]
+- **📂 Public GitHub Repository**: https://github.com/RiddheshFirake/Lenden_SecureLoginSystem.git
+
+## 🛠️ Technology Stack
+
+### Frontend
+- **Framework**: React.js 19.x with TypeScript
+- **UI Library**: Material-UI (@mui/material)
+- **Routing**: React Router DOM
+- **HTTP Client**: Axios
+- **Build Tool**: Create React App (react-scripts)
+
+### Backend
+- **Runtime**: Node.js 18+
+- **Framework**: Express.js 5.x with TypeScript
+- **Authentication**: JSON Web Tokens (jsonwebtoken)
+- **Encryption**: AES-256-GCM (Node.js crypto module)
+- **Password Hashing**: bcrypt (12 salt rounds)
+
+### Database
+- **Database**: MongoDB Atlas (Cloud)
+- **ODM**: Mongoose 8.x
+- **Schema**: Document-based with encrypted field storage
+
+## 🚀 Setup & Run Instructions
+
+### Prerequisites
 - Node.js 18+ and npm
-- MongoDB Atlas account (already configured)
+- Git for cloning the repository
 
-## 🛠️ Installation
-
-### Backend Setup
+### 1. Clone the Repository
 
 ```bash
+git clone https://github.com/RiddheshFirake/Lenden_SecureLoginSystem.git
+cd Lenden_SecureLoginSystem
+```
+
+### 2. Backend Setup
+
+```bash
+# Navigate to backend directory
 cd backend
+
+# Install dependencies
 npm install
+
+# Set up environment variables (create .env file)
+cp .env.example .env
 ```
 
-### Frontend Setup
-
-```bash
-cd frontend
-npm install
-```
-
-## 🔧 Configuration
-
-### Backend Environment Variables
-
-The backend is already configured with MongoDB Atlas. The `.env` file contains:
-
+**Required Environment Variables:**
 ```env
-MONGODB_URI=mongodb+srv://...
-ENCRYPTION_KEY=abcdefghijklmnopqrstuvwxyz123456
+MONGODB_URI=mongodb+srv://your-connection-string
+JWT_SECRET=your-super-secure-jwt-secret-key
+ENCRYPTION_KEY=your-64-character-hex-encryption-key
 NODE_ENV=development
 PORT=3001
-JWT_SECRET=test-jwt-secret-key-for-development
 JWT_EXPIRES_IN=24h
 ```
 
-### Frontend Environment Variables
+```bash
+# Initialize database (optional - creates indexes)
+npm run db:init
 
-The frontend `.env` file is configured to connect to the backend:
+# Start development server
+npm run dev
+```
 
+The backend server will start on `http://localhost:3001`
+
+### 3. Frontend Setup
+
+```bash
+# Navigate to frontend directory (from project root)
+cd frontend
+
+# Install dependencies
+npm install
+
+# Set up environment variables (create .env file)
+cp .env.example .env
+```
+
+**Required Environment Variables:**
 ```env
 REACT_APP_API_BASE_URL=http://localhost:3001/api
 REACT_APP_API_TIMEOUT=10000
 ```
 
-## 🚀 Running the Application
-
-### Start Backend Server
-
 ```bash
-cd backend
-npm run dev
-```
-
-The backend will start on `http://localhost:3001`
-
-### Start Frontend Development Server
-
-```bash
-cd frontend
+# Start development server
 npm start
 ```
 
-The frontend will start on `http://localhost:3000` and automatically open in your browser.
+The frontend will start on `http://localhost:3000` and open automatically in your browser.
 
-## 📱 Using the Application
+## 📚 API Documentation
 
-1. **Register**: Navigate to `/register` to create a new account
-   - Provide email, password, first name, last name, Aadhaar number (12 digits), and phone
-   - All data is validated on both client and server
-   - Sensitive data is encrypted before storage
+### Core Endpoints
 
-2. **Login**: Navigate to `/login` to access your account
-   - Use your registered email and password
-   - Receive a JWT token for authenticated requests
+#### Authentication Endpoints
 
-3. **Dashboard**: After login, view your profile
-   - See your decrypted profile information
-   - Logout option available
+**POST /api/auth/register**
+- **Purpose**: User registration with encrypted data storage
+- **Body**: `{ email, password, firstName, lastName, aadhaarNumber, phone }`
+- **Response**: `{ message, user: { id, email, firstName, lastName } }`
+- **Security**: Validates input, hashes password, encrypts Aadhaar number
 
-## 🔒 Security Features
+**POST /api/auth/login**
+- **Purpose**: User authentication returning JWT token
+- **Body**: `{ email, password }`
+- **Response**: `{ token, user: { id, email, firstName, lastName } }`
+- **Security**: Validates credentials, returns stateless JWT
 
-- **Password Hashing**: bcrypt with 12 salt rounds
-- **Data Encryption**: AES-256-GCM for sensitive data
-- **JWT Authentication**: Secure token-based authentication
-- **Rate Limiting**: Protection against brute force attacks
-- **Input Validation**: Comprehensive validation on client and server
-- **Error Handling**: Graceful error handling with user-friendly messages
-- **CORS Protection**: Configured CORS policies
+#### Protected Endpoints (Require JWT)
 
-## 📊 Database Schema
+**GET /api/profile**
+- **Purpose**: Retrieve user profile with decrypted sensitive data
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **Response**: `{ id, email, firstName, lastName, aadhaarNumber, phone, createdAt }`
+- **Security**: Validates JWT, decrypts Aadhaar number for display
+
+#### Health Check
+
+**GET /health**
+- **Purpose**: Server and database connectivity status
+- **Response**: `{ status: "healthy", database: "connected", timestamp }`
+
+## 🗄️ Database Schema
 
 ### Users Collection (MongoDB)
 
+| Field | Type | Description | Security |
+|-------|------|-------------|----------|
+| `_id` | ObjectId | Primary key | Auto-generated |
+| `email` | String | User email (unique, indexed) | Validated, lowercase |
+| `password` | String | User password | bcrypt hashed (12 rounds) |
+| `firstName` | String | User's first name | Validated, trimmed |
+| `lastName` | String | User's last name | Validated, trimmed |
+| `aadhaarNumber` | String | **Encrypted Aadhaar/ID** | **AES-256-GCM encrypted** |
+| `aadhaarIv` | String | Initialization vector for encryption | Required for decryption |
+| `aadhaarAuthTag` | String | Authentication tag for encryption | Ensures data integrity |
+| `phone` | String | User's phone number | Validated format |
+| `createdAt` | Date | Account creation timestamp | Auto-generated |
+| `updatedAt` | Date | Last modification timestamp | Auto-updated |
+
+**Example Encrypted Storage:**
 ```javascript
 {
-  _id: ObjectId,
-  email: String (unique, indexed),
-  password: String (bcrypt hashed),
-  firstName: String,
-  lastName: String,
-  aadhaarNumber: String (encrypted),
-  aadhaarIv: String,
-  aadhaarAuthTag: String,
-  phone: String,
-  createdAt: Date,
-  updatedAt: Date
+  "_id": ObjectId("..."),
+  "email": "user@example.com",
+  "password": "$2b$12$...", // bcrypt hash
+  "firstName": "John",
+  "lastName": "Doe",
+  "aadhaarNumber": "a1b2c3d4e5f6...", // AES-256 encrypted
+  "aadhaarIv": "1234567890abcdef...", // 16-byte IV
+  "aadhaarAuthTag": "fedcba0987654321...", // 16-byte auth tag
+  "phone": "+1234567890",
+  "createdAt": ISODate("..."),
+  "updatedAt": ISODate("...")
 }
 ```
+
+## 🤖 AI Tool Usage Log
+
+| Task | AI Tool Used | Description | Effectiveness Score (1-5) |
+|------|--------------|-------------|---------------------------|
+| JWT Authentication Middleware | GitHub Copilot | Generated comprehensive JWT validation middleware with error handling and token extraction from Authorization headers | 5/5 |
+| AES-256 Encryption Service | ChatGPT | Created encryption/decryption service using Node.js crypto module with proper IV and auth tag handling for Aadhaar numbers | 5/5 |
+| MongoDB Schema Design | Claude AI | Designed Mongoose schema with proper indexing, validation, and encrypted field structure for secure data storage | 4/5 |
+| React Authentication Context | GitHub Copilot | Generated React Context API implementation for global authentication state management with TypeScript support | 5/5 |
+| Input Validation Middleware | Google Gemini | Created comprehensive validation middleware for email, password, phone, and Aadhaar number formats with security checks | 4/5 |
+| Material-UI Form Components | ChatGPT | Generated responsive login and registration forms with Material-UI components, error handling, and accessibility features | 5/5 |
+| Property-Based Testing | Claude AI | Created property-based tests using fast-check library for encryption/decryption edge cases and authentication flows | 4/5 |
+| Rate Limiting Middleware | GitHub Copilot | Implemented express-rate-limit middleware to prevent brute force attacks on authentication endpoints | 5/5 |
+| Error Boundary Components | Groq | Generated React Error Boundary components for graceful error handling and user-friendly error messages | 4/5 |
+| API Integration Service | ChatGPT | Created Axios-based API service with interceptors for token management, error handling, and request/response logging | 5/5 |
+
+## 🔒 Security Features
+
+- **🔐 Stateless Authentication**: JWT tokens eliminate server-side session storage
+- **🛡️ Field-level Encryption**: AES-256-GCM encryption for Aadhaar numbers
+- **🔑 Password Security**: bcrypt hashing with 12 salt rounds
+- **🚫 Rate Limiting**: Protection against brute force attacks
+- **✅ Input Validation**: Comprehensive client and server-side validation
+- **🌐 CORS Protection**: Configured cross-origin resource sharing
+- **📝 Security Logging**: Comprehensive audit trail for security events
+- **🔍 Error Handling**: Secure error messages without data exposure
 
 ## 🧪 Testing
 
 ### Backend Tests
-
 ```bash
 cd backend
-npm test
+npm test                 # Run all tests
+npm run test:watch      # Run tests in watch mode
 ```
 
 ### Frontend Tests
-
 ```bash
 cd frontend
-npm test
+npm test                # Run component tests
 ```
 
-## 📚 API Endpoints
+**Test Coverage:**
+- Unit tests for all services and utilities
+- Integration tests for API endpoints
+- Property-based tests for encryption/decryption
+- End-to-end user flow testing
 
-### Authentication
-
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login and receive JWT token
-
-### Profile (Protected)
-
-- `GET /api/profile` - Get user profile (requires authentication)
-
-### Health Check
-
-- `GET /health` - Check server and database status
-
-## 🏗️ Project Structure
+## 🏗️ Project Architecture
 
 ```
-├── backend/
+├── backend/                    # Node.js/Express API Server
 │   ├── src/
-│   │   ├── config/          # Database configuration
-│   │   ├── middleware/      # Express middleware
-│   │   ├── models/          # Mongoose models
-│   │   ├── repositories/    # Data access layer
-│   │   ├── routes/          # API routes
-│   │   ├── services/        # Business logic
-│   │   └── index.ts         # Server entry point
-│   ├── tests/               # Backend tests
-│   └── package.json
+│   │   ├── config/            # Database configuration
+│   │   ├── middleware/        # Security & validation middleware
+│   │   ├── models/           # Mongoose schemas & validation
+│   │   ├── repositories/     # Data access layer
+│   │   ├── routes/           # API route definitions
+│   │   ├── services/         # Business logic & encryption
+│   │   └── index.ts          # Application entry point
+│   └── tests/                # Comprehensive test suite
 │
-├── frontend/
+├── frontend/                  # React.js Web Application
 │   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── contexts/        # React contexts
-│   │   ├── pages/           # Page components
-│   │   ├── services/        # API services
-│   │   └── App.tsx          # Main app component
-│   └── package.json
+│   │   ├── components/       # Reusable UI components
+│   │   ├── contexts/         # React Context providers
+│   │   ├── pages/           # Page-level components
+│   │   ├── services/        # API communication layer
+│   │   └── App.tsx          # Main application component
+│   └── public/              # Static assets
 │
-└── README.md
+└── README.md                 # Project documentation
 ```
 
-## 🔄 Migration from PostgreSQL to MongoDB
+## 🚀 Deployment Notes
 
-This project has been successfully migrated from PostgreSQL to MongoDB Atlas:
-
-- ✅ Replaced `pg` with `mongoose`
-- ✅ Updated database configuration
-- ✅ Converted SQL queries to MongoDB operations
-- ✅ Updated all models and repositories
-- ✅ Maintained all security features
-- ✅ All tests updated for MongoDB
-
-## 🐛 Troubleshooting
-
-### Backend won't start
-- Ensure MongoDB Atlas connection string is correct
-- Check that all environment variables are set
-- Verify Node.js version is 18+
-
-### Frontend won't connect to backend
-- Ensure backend is running on port 3001
-- Check CORS configuration
-- Verify API base URL in frontend .env
-
-### Database connection issues
-- Verify MongoDB Atlas cluster is running
-- Check network access whitelist in Atlas
-- Ensure database user credentials are correct
+- **Backend**: Can be deployed to any Node.js hosting service (Heroku, AWS, DigitalOcean)
+- **Frontend**: Static build can be deployed to CDN (Netlify, Vercel, AWS S3)
+- **Database**: MongoDB Atlas provides cloud hosting with built-in security
+- **Environment**: Ensure all environment variables are properly configured in production
 
 ## 📝 License
 
 ISC
 
-## 👥 Support
+---
 
-For issues or questions, please check the troubleshooting section or review the code documentation.
+**Assignment Submission**: Identity Management Microservice (Option A)  
+**Key Features**: Stateless JWT Authentication + AES-256 Field Encryption  
+**Tech Stack**: React.js + Node.js/Express + MongoDB Atlas
