@@ -184,16 +184,16 @@ The frontend will start on `http://localhost:3000` and open automatically in you
 
 | Task | AI Tool Used | Description | Effectiveness Score (1-5) |
 |------|--------------|-------------|---------------------------|
-| JWT Authentication Middleware | GitHub Copilot | Generated comprehensive JWT validation middleware with error handling and token extraction from Authorization headers | 5/5 |
-| AES-256 Encryption Service | ChatGPT | Created encryption/decryption service using Node.js crypto module with proper IV and auth tag handling for Aadhaar numbers | 5/5 |
-| MongoDB Schema Design | Claude AI | Designed Mongoose schema with proper indexing, validation, and encrypted field structure for secure data storage | 4/5 |
-| React Authentication Context | GitHub Copilot | Generated React Context API implementation for global authentication state management with TypeScript support | 5/5 |
-| Input Validation Middleware | Google Gemini | Created comprehensive validation middleware for email, password, phone, and Aadhaar number formats with security checks | 4/5 |
-| Material-UI Form Components | ChatGPT | Generated responsive login and registration forms with Material-UI components, error handling, and accessibility features | 5/5 |
-| Property-Based Testing | Claude AI | Created property-based tests using fast-check library for encryption/decryption edge cases and authentication flows | 4/5 |
-| Rate Limiting Middleware | GitHub Copilot | Implemented express-rate-limit middleware to prevent brute force attacks on authentication endpoints | 5/5 |
-| Error Boundary Components | Groq | Generated React Error Boundary components for graceful error handling and user-friendly error messages | 4/5 |
-| API Integration Service | ChatGPT | Created Axios-based API service with interceptors for token management, error handling, and request/response logging | 5/5 |
+| JWT Authentication Middleware | GitHub Copilot | Generated comprehensive JWT validation middleware with error handling and token extraction from Authorization headers. Saved 3 hours on boilerplate code, minimal debugging required. | 5/5 |
+| AES-256 Encryption Service | ChatGPT | Created encryption/decryption service using Node.js crypto module with proper IV and auth tag handling for Aadhaar numbers. Generated clean code but required manual optimization for error handling. | 5/5 |
+| MongoDB Schema Design | Claude AI | Designed Mongoose schema with proper indexing, validation, and encrypted field structure for secure data storage. Saved 2 hours on boilerplate code, but debugging AI-generated schema validation took additional time. | 4/5 |
+| React Authentication Context | GitHub Copilot | Generated React Context API implementation for global authentication state management with TypeScript support. Excellent code quality with proper type definitions. | 5/5 |
+| Input Validation Middleware | Google Gemini | Created comprehensive validation middleware for email, password, phone, and Aadhaar number formats with security checks. Good foundation but required manual refinement for edge cases. | 4/5 |
+| Material-UI Form Components | ChatGPT | Generated responsive login and registration forms with Material-UI components, error handling, and accessibility features. Saved significant development time with clean, production-ready code. | 5/5 |
+| Property-Based Testing | Claude AI | Created property-based tests using fast-check library for encryption/decryption edge cases and authentication flows. Generated comprehensive test cases but required manual adjustment for specific business logic. | 4/5 |
+| Rate Limiting Middleware | GitHub Copilot | Implemented express-rate-limit middleware to prevent brute force attacks on authentication endpoints. Perfect implementation with proper configuration options. | 5/5 |
+| Error Boundary Components | Groq | Generated React Error Boundary components for graceful error handling and user-friendly error messages. Good structure but needed customization for specific error types and logging. | 4/5 |
+| API Integration Service | ChatGPT | Created Axios-based API service with interceptors for token management, error handling, and request/response logging. Excellent foundation that significantly accelerated development. | 5/5 |
 
 ## 🔒 Security Features
 
