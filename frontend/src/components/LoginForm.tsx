@@ -5,8 +5,14 @@ import {
   Typography,
   CircularProgress,
   Paper,
-  TextField
+  TextField,
+  IconButton,
+  InputAdornment
 } from '@mui/material';
+import {
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -23,6 +29,7 @@ const LoginForm: React.FC = () => {
   });
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const { showSuccess, showError } = useNotification();
   const navigate = useNavigate();
@@ -88,6 +95,14 @@ const LoginForm: React.FC = () => {
       showSuccess('Login successful! Welcome back.');
       navigate('/dashboard');
     } catch (error: any) {
+      console.log('LoginForm caught error:', {
+        error,
+        message: error.message,
+        status: error.status,
+        code: error.code,
+        type: typeof error
+      });
+      
       let errorMessage = 'Login failed. Please try again.';
       
       // Handle specific error types for better user feedback
@@ -115,6 +130,11 @@ const LoginForm: React.FC = () => {
       
       setError(errorMessage);
       showError(errorMessage);
+      
+      // Clear password field on login failure for security
+      if (error.status === 401) {
+        setFormData(prev => ({ ...prev, password: '' }));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -307,13 +327,28 @@ const LoginForm: React.FC = () => {
               <TextField
                 fullWidth
                 name="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={handleInputChange('password')}
                 disabled={isSubmitting}
                 autoComplete="current-password"
                 placeholder="••••••••"
                 variant="outlined"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        disabled={isSubmitting}
+                        size="small"
+                        sx={{ color: '#666666' }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,

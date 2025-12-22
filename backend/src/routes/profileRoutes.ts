@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { profileService } from '../services/profileService';
+import { authService } from '../services/authService';
 
 const router = Router();
 
@@ -95,6 +96,59 @@ router.put('/', authMiddleware, async (req: Request, res: Response, next: NextFu
         res.status(400).json({
           error: 'Bad Request',
           message: error.message
+        });
+        return;
+      }
+    }
+    next(error);
+  }
+});
+
+/**
+ * POST /api/profile/verify-password
+ * Verify user password for sensitive operations
+ * Requires authentication
+ */
+router.post('/verify-password', authMiddleware, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        error: 'Unauthorized',
+        message: 'User information not found'
+      });
+      return;
+    }
+
+    const { password } = req.body;
+
+    if (!password) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: 'Password is required'
+      });
+      return;
+    }
+
+    const isValid = await authService.verifyUserPassword(req.user.userId, password);
+    
+    if (!isValid) {
+      res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Incorrect password. Please try again.'
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'Password verified successfully',
+      verified: true
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'User not found') {
+        res.status(404).json({
+          error: 'Not Found',
+          message: 'User not found'
         });
         return;
       }

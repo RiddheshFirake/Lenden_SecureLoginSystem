@@ -69,9 +69,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(userData);
       localStorage.setItem('authToken', newToken);
     } catch (error) {
-      const apiError = error as ApiError;
-      // Re-throw with enhanced error information
-      throw new Error(apiError.message || 'Login failed. Please try again.');
+      // Re-throw the original API error to preserve error structure
+      throw error;
     }
   };
 
@@ -81,9 +80,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // After successful registration, automatically log in
       await login(userData.email, userData.password);
     } catch (error) {
-      const apiError = error as ApiError;
-      // Re-throw with enhanced error information
-      throw new Error(apiError.message || 'Registration failed. Please try again.');
+      // Re-throw the original API error to preserve error structure
+      throw error;
     }
   };
 

@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import ProfileDisplay from './ProfileDisplay';
 import RetryComponent from './RetryComponent';
+import PasswordVerificationDialog from './PasswordVerificationDialog';
 import { apiWithRetry, ApiError } from '../services/api';
 import { User } from '../types';
 
@@ -26,6 +27,7 @@ const ProfileDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
 
   const fetchProfileData = async () => {
     try {
@@ -82,12 +84,19 @@ const ProfileDashboard: React.FC = () => {
   };
 
   const handleEditToggle = () => {
-    setIsEditing(!isEditing);
     if (isEditing) {
+      // If currently editing, just cancel
+      setIsEditing(false);
       showInfo('Edit mode disabled.');
     } else {
-      showInfo('Edit mode enabled. You can now modify your profile information.');
+      // If not editing, show password verification dialog
+      setShowPasswordDialog(true);
     }
+  };
+
+  const handlePasswordVerified = () => {
+    setIsEditing(true);
+    showInfo('Edit mode enabled. You can now modify your profile information.');
   };
 
   if (!isAuthenticated) {
@@ -203,119 +212,8 @@ const ProfileDashboard: React.FC = () => {
               alignItems: 'center', 
               gap: { xs: 1, sm: 2 },
               width: { xs: '100%', sm: 'auto' },
-              justifyContent: { xs: 'space-between', sm: 'flex-end' }
+              justifyContent: { xs: 'flex-end', sm: 'flex-end' }
             }}>
-              <Button
-                onClick={handleEditToggle}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  color: isEditing ? '#000000' : '#666666',
-                  borderColor: isEditing ? '#9AFF47' : '#E0E0E0',
-                  backgroundColor: isEditing ? '#9AFF47' : 'transparent',
-                  borderRadius: '20px',
-                  textTransform: 'none',
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                  px: { xs: 1.5, sm: 2 },
-                  py: { xs: 0.5, sm: 0.75 },
-                  minWidth: { xs: 'auto', sm: 'auto' },
-                  position: 'relative',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: '5px',
-                    right: '5px',
-                    width: '20px',
-                    height: '20px',
-                    backgroundColor: '#9AFF47',
-                    borderRadius: '50%',
-                    transform: 'scale(0)',
-                    transformOrigin: 'center',
-                    transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                    zIndex: 0,
-                  },
-                  '&:hover:not(:disabled)::before': {
-                    transform: isEditing ? 'scale(0)' : 'scale(35)',
-                  },
-                  '&:hover:not(:disabled)': {
-                    borderColor: '#9AFF47',
-                    backgroundColor: isEditing ? '#9AFF47' : 'transparent',
-                    color: '#000000',
-                    '& .button-text': {
-                      color: '#000000',
-                      position: 'relative',
-                      zIndex: 1,
-                    }
-                  },
-                }}
-              >
-                <span className="button-text" style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center' }}>
-                  <EditIcon sx={{ mr: { xs: 0, sm: 1 }, fontSize: { xs: 14, sm: 16 } }} />
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                    {isEditing ? 'Cancel Edit' : 'Edit Profile'}
-                  </Box>
-                </span>
-              </Button>
-              
-              <Button
-                onClick={handleRefresh}
-                disabled={loading || refreshing}
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  color: '#666666',
-                  borderColor: '#E0E0E0',
-                  borderRadius: '20px',
-                  textTransform: 'none',
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                  px: { xs: 1.5, sm: 2 },
-                  py: { xs: 0.5, sm: 0.75 },
-                  minWidth: { xs: 'auto', sm: 'auto' },
-                  position: 'relative',
-                  overflow: 'hidden',
-                  '&:hover': {
-                    transform: 'none',
-                    boxShadow: 'none',
-                  },
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: '5px',
-                    right: '5px',
-                    width: '20px',
-                    height: '20px',
-                    backgroundColor: '#9AFF47',
-                    borderRadius: '50%',
-                    transform: 'scale(0)',
-                    transformOrigin: 'center',
-                    transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                    zIndex: 0,
-                  },
-                  '&:hover:not(:disabled)::before': {
-                    transform: 'scale(35)',
-                  },
-                  '&:hover:not(:disabled)': {
-                    borderColor: '#9AFF47',
-                    backgroundColor: 'transparent',
-                    color: '#000000',
-                    '& .button-text': {
-                      color: '#000000',
-                      position: 'relative',
-                      zIndex: 1,
-                    }
-                  },
-                }}
-              >
-                <span className="button-text" style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center' }}>
-                  {refreshing ? <CircularProgress size={16} sx={{ mr: { xs: 0, sm: 1 }, color: 'inherit' }} /> : <RefreshIcon sx={{ mr: { xs: 0, sm: 1 }, fontSize: { xs: 14, sm: 16 } }} />}
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                    Refresh
-                  </Box>
-                </span>
-              </Button>
-              
               <Button
                 onClick={handleLogout}
                 variant="contained"
@@ -482,29 +380,158 @@ const ProfileDashboard: React.FC = () => {
                 border: '1px solid #E0E0E0',
                 p: { xs: 3, sm: 4 },
                 mb: { xs: 3, sm: 4 },
-                textAlign: 'center'
               }}
             >
-              <Typography 
-                variant="h4" 
-                component="h1" 
-                gutterBottom
-                sx={{ 
-                  color: '#1A1A1A',
-                  fontWeight: 600,
-                  mb: 1,
-                  fontSize: { xs: '1.5rem', sm: '1.75rem' },
-                }}
-              >
-                Welcome back, {profileData.firstName}!
-              </Typography>
-              <Typography 
-                variant="body1" 
-                color="text.secondary"
-                sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, color: '#666666' }}
-              >
-                Your secure profile information
-              </Typography>
+              {/* Welcome Section with Inline Buttons */}
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                justifyContent: 'space-between',
+                mb: 2,
+                gap: { xs: 2, sm: 0 }
+              }}>
+                <Box>
+                  <Typography 
+                    variant="h4" 
+                    component="h1" 
+                    sx={{ 
+                      color: '#1A1A1A',
+                      fontWeight: 600,
+                      mb: 1,
+                      fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                    }}
+                  >
+                    Welcome back, {profileData.firstName}!
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, color: '#666666' }}
+                  >
+                    Your secure profile information
+                  </Typography>
+                </Box>
+
+                {/* Inline Action Buttons */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: { xs: 1, sm: 2 },
+                  flexShrink: 0
+                }}>
+                  <Button
+                    onClick={handleEditToggle}
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      color: isEditing ? '#000000' : '#666666',
+                      borderColor: isEditing ? '#9AFF47' : '#E0E0E0',
+                      backgroundColor: isEditing ? '#9AFF47' : 'transparent',
+                      borderRadius: '20px',
+                      textTransform: 'none',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      px: { xs: 1.5, sm: 2 },
+                      py: { xs: 0.5, sm: 0.75 },
+                      minWidth: { xs: 'auto', sm: 'auto' },
+                      position: 'relative',
+                      overflow: 'hidden',
+                      transition: 'all 0.3s ease',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: '5px',
+                        right: '5px',
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: '#9AFF47',
+                        borderRadius: '50%',
+                        transform: 'scale(0)',
+                        transformOrigin: 'center',
+                        transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                        zIndex: 0,
+                      },
+                      '&:hover:not(:disabled)::before': {
+                        transform: isEditing ? 'scale(0)' : 'scale(35)',
+                      },
+                      '&:hover:not(:disabled)': {
+                        borderColor: '#9AFF47',
+                        backgroundColor: isEditing ? '#9AFF47' : 'transparent',
+                        color: '#000000',
+                        '& .button-text': {
+                          color: '#000000',
+                          position: 'relative',
+                          zIndex: 1,
+                        }
+                      },
+                    }}
+                  >
+                    <span className="button-text" style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center' }}>
+                      <EditIcon sx={{ mr: { xs: 0, sm: 1 }, fontSize: { xs: 14, sm: 16 } }} />
+                      <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                        {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+                      </Box>
+                    </span>
+                  </Button>
+                  
+                  <Button
+                    onClick={handleRefresh}
+                    disabled={loading || refreshing}
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      color: '#666666',
+                      borderColor: '#E0E0E0',
+                      borderRadius: '20px',
+                      textTransform: 'none',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      px: { xs: 1.5, sm: 2 },
+                      py: { xs: 0.5, sm: 0.75 },
+                      minWidth: { xs: 'auto', sm: 'auto' },
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&:hover': {
+                        transform: 'none',
+                        boxShadow: 'none',
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: '5px',
+                        right: '5px',
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: '#9AFF47',
+                        borderRadius: '50%',
+                        transform: 'scale(0)',
+                        transformOrigin: 'center',
+                        transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                        zIndex: 0,
+                      },
+                      '&:hover:not(:disabled)::before': {
+                        transform: 'scale(35)',
+                      },
+                      '&:hover:not(:disabled)': {
+                        borderColor: '#9AFF47',
+                        backgroundColor: 'transparent',
+                        color: '#000000',
+                        '& .button-text': {
+                          color: '#000000',
+                          position: 'relative',
+                          zIndex: 1,
+                        }
+                      },
+                    }}
+                  >
+                    <span className="button-text" style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center' }}>
+                      {refreshing ? <CircularProgress size={16} sx={{ mr: { xs: 0, sm: 1 }, color: 'inherit' }} /> : <RefreshIcon sx={{ mr: { xs: 0, sm: 1 }, fontSize: { xs: 14, sm: 16 } }} />}
+                      <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                        Refresh
+                      </Box>
+                    </span>
+                  </Button>
+                </Box>
+              </Box>
             </Box>
             
             <ProfileDisplay user={profileData} isEditing={isEditing} onSave={fetchProfileData} />
@@ -591,6 +618,15 @@ const ProfileDashboard: React.FC = () => {
           </Box>
         )}
       </Container>
+
+      {/* Password Verification Dialog */}
+      <PasswordVerificationDialog
+        open={showPasswordDialog}
+        onClose={() => setShowPasswordDialog(false)}
+        onVerified={handlePasswordVerified}
+        title="Verify Your Password"
+        message="Please enter your password to enable profile editing. This ensures the security of your sensitive information."
+      />
     </Box>
   );
 };

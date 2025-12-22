@@ -24,9 +24,18 @@ export interface ApiError {
 }
 
 // Helper function to determine if an error is retryable
-const isRetryableError = (error: AxiosError): boolean => {
+const isRetryableError = (error: AxiosError, config?: AxiosRequestConfig): boolean => {
+  // Don't retry authentication-related requests
+  const isAuthRequest = config?.url?.includes('/auth/login') || 
+                       config?.url?.includes('/auth/register') ||
+                       config?.url?.includes('/profile/verify-password');
+  
+  if (isAuthRequest) {
+    return false;
+  }
+
   if (!error.response) {
-    // Network errors are retryable
+    // Network errors are retryable for non-auth requests
     return true;
   }
   
@@ -37,6 +46,14 @@ const isRetryableError = (error: AxiosError): boolean => {
 
 // Helper function to create standardized error messages
 const createApiError = (error: AxiosError): ApiError => {
+  console.log('createApiError called with:', {
+    hasResponse: !!error.response,
+    status: error.response?.status,
+    data: error.response?.data,
+    message: error.message,
+    code: error.code
+  });
+
   if (!error.response) {
     // Network error
     if (error.code === 'ECONNABORTED') {
@@ -66,7 +83,7 @@ const createApiError = (error: AxiosError): ApiError => {
       };
     case 401:
       return {
-        message: 'Authentication failed. Please log in again.',
+        message: data?.message || 'Authentication failed. Please check your credentials.',
         status,
         code: 'UNAUTHORIZED',
         retryable: false,
@@ -121,12 +138,37 @@ const retryRequest = async (
   config: AxiosRequestConfig,
   retryCount: number = 0
 ): Promise<AxiosResponse> => {
+  console.log('retryRequest called:', { url: config.url, retryCount });
+  
   try {
     return await api.request(config);
   } catch (error) {
-    const axiosError = error as AxiosError;
+    console.log('retryRequest caught error:', {
+      error,
+      hasCodeAndMessage: error && typeof error === 'object' && 'code' in error && 'message' in error,
+      type: typeof error
+    });
     
-    if (retryCount < MAX_RETRIES && isRetryableError(axiosError)) {
+    // Check if this is already a transformed ApiError
+    if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+      // This is already a transformed ApiError from the interceptor
+      const apiError = error as ApiError;
+      console.log('Already transformed ApiError:', apiError);
+      
+      if (retryCount < MAX_RETRIES && apiError.retryable) {
+        const delay = RETRY_DELAY * Math.pow(2, retryCount); // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return retryRequest(config, retryCount + 1);
+      }
+      
+      throw apiError;
+    }
+    
+    // This is a raw axios error, transform it
+    const axiosError = error as AxiosError;
+    console.log('Raw axios error, transforming:', axiosError);
+    
+    if (retryCount < MAX_RETRIES && isRetryableError(axiosError, config)) {
       const delay = RETRY_DELAY * Math.pow(2, retryCount); // Exponential backoff
       await new Promise(resolve => setTimeout(resolve, delay));
       return retryRequest(config, retryCount + 1);
@@ -157,9 +199,15 @@ api.interceptors.response.use(
     const apiError = createApiError(error);
     
     if (apiError.status === 401) {
-      // Clear token and redirect to login on unauthorized
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      // Don't auto-logout for password verification or login failures
+      const isPasswordVerification = error.config?.url?.includes('/profile/verify-password');
+      const isLoginAttempt = error.config?.url?.includes('/auth/login');
+      
+      if (!isPasswordVerification && !isLoginAttempt) {
+        // Clear token and redirect to login on unauthorized
+        localStorage.removeItem('authToken');
+        window.location.href = '/login';
+      }
     }
     
     return Promise.reject(apiError);

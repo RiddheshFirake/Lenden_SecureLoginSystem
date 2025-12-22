@@ -183,6 +183,25 @@ export class AuthService {
   public async comparePassword(password: string, hash: string): Promise<boolean> {
     return bcrypt.compare(password, hash);
   }
+
+  /**
+   * Verifies user password for sensitive operations
+   */
+  public async verifyUserPassword(userId: string, password: string): Promise<boolean> {
+    try {
+      // Find user by ID
+      const user = await userRepository.findUserById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      return isPasswordValid;
+    } catch (error) {
+      throw new Error('Password verification failed');
+    }
+  }
 }
 
 // Export singleton instance
