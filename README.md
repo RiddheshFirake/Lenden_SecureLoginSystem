@@ -15,11 +15,6 @@ This project implements a comprehensive **Identity Management Microservice** wit
 - **📱 Modern UI**: Responsive React.js frontend with Material-UI components
 - **⚡ Scalable Backend**: Node.js with Express.js providing RESTful API endpoints
 
-## 🎬 Demo & Repository
-
-- **📹 Live Demo Video**: [INSERT_DEMO_VIDEO_LINK_HERE]
-- **📂 Public GitHub Repository**: https://github.com/RiddheshFirake/Lenden_SecureLoginSystem.git
-
 ## 🛠️ Technology Stack
 
 ### Frontend
